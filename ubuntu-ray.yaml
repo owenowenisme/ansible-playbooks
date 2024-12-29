@@ -1,0 +1,75 @@
+- name: Ubuntu For Ray equipped with Docker, Kubectl, Kind, Golang, Docker Compose
+  hosts: all
+  become: true
+  tags: ['setup']
+  tasks:
+      - name: Install required system packages with apt
+        apt:
+          pkg:
+            - aptitude
+            - apt-transport-https
+            - ca-certificates
+            - curl
+            - software-properties-common
+            - python3-pip
+            - virtualenv
+            - python3-setuptools
+            - gcc
+            - docker-compose
+            - docker-ce
+            - golang-go
+          state: latest
+          update_cache: true
+
+      - name: Install GolangCI Lint with snap
+        snap:
+          name: golangci-lint
+          classic: true
+          channel: stable
+
+      - name: Add Docker GPG apt Key
+        apt_key:
+          url: https://download.docker.com/linux/ubuntu/gpg
+          state: present
+
+      - name: Add Docker Repository
+        apt_repository:
+          repo: deb https://download.docker.com/linux/ubuntu jammy stable
+          state: present
+
+      - name: Download kubectl binary
+        get_url:
+          url: https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl
+          dest: /usr/local/bin/kubectl
+          mode: '0755'
+
+      - name: Verify and display kubectl version
+        debug:
+          msg: "{{ lookup('pipe', 'kubectl version --client') }}"
+        changed_when: false
+
+      - name: Install kind
+        get_url:
+          url:  https://kind.sigs.k8s.io/dl/v0.26.0/kind-linux-amd64
+          dest: /usr/local/bin/kind
+          mode: '0755'
+
+      - name: Verify and display kind version
+        debug:
+          msg: "{{ lookup('pipe', 'kind version') }}"
+        changed_when: false
+      
+- name: Add Github alias to bashrc
+  hosts: all
+  tags: ['git-config']
+  tasks:
+      - name: add Git commit and push alias to bashrc
+        shell:
+          cmd: |
+            echo "alias gpr='function _gpr() { git add .; gcm \"\$1\"; git push; }; _gpr'" >> ~/.bashrc
+            echo "alias gcm=\"git commit -s -m\"" >> ~/.bashrc
+      - name: git config
+        shell: 
+          cmd: |
+            git config --global user.name "owenowenisme"
+            git config --global user.email "mses010108@gmail.com"
