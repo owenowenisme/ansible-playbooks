@@ -16,7 +16,6 @@
             - python3-setuptools
             - gcc
             - docker-compose
-            - docker-ce
             - golang-go
           state: latest
           update_cache: true
