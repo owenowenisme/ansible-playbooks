@@ -58,10 +58,22 @@
         debug:
           msg: "{{ lookup('pipe', 'kind version') }}"
         changed_when: false
-      
-- name: Add Github alias to bashrc
+
+      - name: Add owenowenisme to docker & sudo group
+        shell:
+          cmd: |
+            sudo usermod -aG docker owenowenisme
+            sudo usermod -aG sudo owenowenisme
+            groups owenowenisme
+        register: groups_output
+
+      - name: Verify docker group
+        debug:
+          var: groups_output.stdout
+
+- name: Configure for real user(owenowenisme)
   hosts: all
-  tags: ['git-config']
+  tags: ['user-config']
   tasks:
       - name: add Git commit and push alias to bashrc
         shell:
